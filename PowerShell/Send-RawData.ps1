@@ -1,4 +1,4 @@
-# This expects to find an evironment variable named MCAST_API_KEY containing the key obtained from the MCast web interface.
+# This expects to find an environment variable named MCAST_API_KEY containing the key obtained from the MCast web interface.
 # You may alternatively paste the API key on this line, though your company's policy might discourage plain-text secrets.
 $apiKey = "$env:MCAST_API_KEY"
 
