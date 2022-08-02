@@ -15,13 +15,13 @@ json=()
 for d in {25..31}
 do
   date="2022-07-$d"
-  metLoad=$((d*100))
-  smlLoad=$((d*10))
-  metJson=$(jq -nc --arg date $date --argjson load $metLoad '{"operatingArea":"Metropolis","date":$date,"load":$load}')
-  json+=("$metJson")
+  metropolisLoad=$((d*100))
+  smallvilleLoad=$((d*10))
+  metropolisJson=$(jq -nc --arg date $date --argjson load $metropolisLoad '{"operatingArea":"Metropolis","date":$date,"load":$load}')
+  json+=("$metropolisJson")
 
-  smlJson=$(jq -nc --arg date $date --argjson load $smlLoad '{"operatingArea":"Smallville","date":$date,"load":$load}')
-  json+=("$smlJson")
+  smallvilleJson=$(jq -nc --arg date $date --argjson load $smallvilleLoad '{"operatingArea":"Smallville","date":$date,"load":$load}')
+  json+=("$smallvilleJson")
 done
 
 body=$(jq -n '$ARGS.positional' --jsonargs ${json[@]})
@@ -40,4 +40,4 @@ printf "Generating a forecast...\n"
 curl -iX "POST" \
   "https://$mcastDomain/api/v1/daily/generate-forecast?dryRun=$dryRun" \
   -H "accept: */*" \
-  -H "x-api-key: $apiKey" \
+  -H "x-api-key: $apiKey"
