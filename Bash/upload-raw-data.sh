@@ -11,12 +11,17 @@ mcastDomain="demo-gas.mea-analytics.tools"
 # Change this to false to make real changes to your MCast database.
 dryRun=true
 
+dates=()
+for d in {25..31}; do dates+=("2022-07-$d"); done
+metropolisLoads=(134537 135647 136389 137446 132354 124888 127618)
+smallvilleLoads=(33409 33033 32765 34437 33164 31412 30426)
 json=()
-for d in {25..31}
+for i in {0..6}
 do
-  date="2022-07-$d"
-  metropolisLoad=$((d*100))
-  smallvilleLoad=$((d*10))
+  date=${dates[$i]}
+  metropolisLoad=${metropolisLoads[$i]}
+  smallvilleLoad=${smallvilleLoads[$i]}
+
   metropolisJson=$(jq -nc --arg date $date --argjson load $metropolisLoad '{"operatingArea":"Metropolis","date":$date,"load":$load}')
   json+=("$metropolisJson")
 
