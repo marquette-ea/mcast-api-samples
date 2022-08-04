@@ -1,3 +1,5 @@
+$ErrorActionPreference = 'Stop'
+
 # This expects to find an environment variable named MCAST_API_KEY containing the key obtained from the MCast web interface.
 # You may alternatively paste the API key on this line, though your company's policy might discourage plain-text secrets.
 $apiKey = "$env:MCAST_API_KEY"
@@ -9,21 +11,23 @@ $mcastDomain = "demo-gas.mea-analytics.tools"
 # Change this to "false" to make real changes to your MCast database.
 $dryRun = "true"
 
+$dates = @()
+foreach ($day in (25 .. 31)) { $dates += New-Object System.DateTime 2022,07,$day }
+$metropolisLoad = @(134537, 135647, 136389, 137446, 132354, 124888, 127618)
+$smallvilleLoad = @(33409, 33033, 32765, 34437, 33164, 31412, 30426)
 $body = @()
-
-foreach ($day in (25 .. 31)) {
-  $date = New-Object System.DateTime 2022,07,$day
+foreach ($i in (0 .. 6)) {
   
   $body += @{
     operatingArea = "Metropolis";
-    date = $date.ToShortDateString();
-    load = $day*100;
+    date = $dates[$i].ToShortDateString();
+    load = $metropolisLoad[$i];
   }
 
   $body += @{
     operatingArea = "Smallville";
-    date = $date.ToShortDateString();
-    load = $day*10;
+    date = $dates[$i].ToShortDateString();
+    load = $smallvilleLoad[$i];
   }
 }
 
