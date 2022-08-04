@@ -60,7 +60,11 @@ class Program {
         
     var query = new Dictionary<string, string> { ["dryRun"] = dryRun.ToString() };
     var uri = QueryHelpers.AddQueryString($"https://{mcastDomain}/api/v1/daily/observed-load", query);
-    var content = new StringContent(JsonConvert.SerializeObject(body, serializerSettings), encoding: Encoding.UTF8, mediaType: "application/json");
+    var content = new StringContent(
+      JsonConvert.SerializeObject(body, serializerSettings), 
+      encoding: Encoding.UTF8, 
+      mediaType: "application/json"
+    );
 
     Console.WriteLine("submitting load values...");
     var response = await client.PostAsync(uri, content);
