@@ -22,12 +22,14 @@ metropolisLoad = [ 134537, 135647, 136389, 137446, 132354, 124888, 127618 ]
 smallvilleLoad = [ 33409, 33033, 32765, 34437, 33164, 31412, 30426 ]
 
 @dataclass(frozen=True)
-class PostJson:
+class RequestBodyJson:
+  """Data format the API expects in the request to upload data"""
   operating_area: str
   date: date
   load: float
 
   def to_dict(self):
+    """Convert to a dictionary compatible with json.dumps"""
     return { 
       "operatingArea": self.operating_area,
       "date": self.date.isoformat(),
@@ -37,7 +39,7 @@ class PostJson:
 loads = []
 for i in range(0, 7):
   loads.append(
-    PostJson(
+    RequestBodyJson(
       operating_area = "Metropolis",
       date = dates[i],
       load = metropolisLoad[i]
@@ -45,7 +47,7 @@ for i in range(0, 7):
   )
 
   loads.append(
-    PostJson(
+    RequestBodyJson(
       operating_area = "Smallville",
       date = dates[i],
       load = smallvilleLoad[i]

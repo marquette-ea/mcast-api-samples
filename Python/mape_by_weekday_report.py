@@ -35,6 +35,7 @@ class ForecastData:
 
   @classmethod
   def of_dict(cls, d):
+    """Parse a dictionary compatible with JSON into an ForecastData"""
     return ForecastData(
       date=date.fromisoformat(d["date"]),
       days_out=int(d["daysOut"]),
@@ -42,7 +43,7 @@ class ForecastData:
     )
 
 @dataclass(frozen=True)
-class GetForecastJson:
+class ForecastResponseJson:
   """JSON response for an 8-day load forecast"""
   operating_area: str
   forecast_start_date: date
@@ -54,7 +55,8 @@ class GetForecastJson:
 
   @classmethod
   def of_dict(cls, d):
-    return GetForecastJson(
+    """Parse a dictionary compatible with JSON into an ForecastResponseJson"""
+    return ForecastResponseJson(
       operating_area=d["operatingArea"],
       forecast_start_date=date.fromisoformat(d["forecastStartDate"]),
       utc_retrieval_timestamp=dateutil.parser.isoparse(d["utcRetrievalTimestamp"]),
@@ -65,7 +67,7 @@ class GetForecastJson:
     )
 
 @dataclass(frozen=True)
-class GetObservedJson:
+class ObservedResponseJson:
   """JSON response for an observed load value"""
   operating_area: str
   date: date
@@ -74,7 +76,8 @@ class GetObservedJson:
 
   @classmethod
   def of_dict(cls, d):
-    return GetObservedJson(
+    """Parse a dictionary compatible with JSON into an ObservedResponseJson"""
+    return ObservedResponseJson(
       operating_area=d["operatingArea"],
       date=date.fromisoformat(d["date"]),
       net_load=float(d["netLoad"]),
@@ -99,7 +102,7 @@ def get_data_via_api():
   response = requests.get(f"https://{mcast_domain}/api/v1/daily/forecasted-load", params=params, headers=headers)
   print(response)
   response.raise_for_status()
-  fcsts = [ GetForecastJson.of_dict(json) for json in response.json() ]
+  fcsts = [ ForecastResponseJson.of_dict(json) for json in response.json() ]
 
   print("Retrieving observed data...")
 
@@ -114,7 +117,7 @@ def get_data_via_api():
   response = requests.get(f"https://{mcast_domain}/api/v1/daily/observed-load", params=params, headers=headers);
   print(response)
   response.raise_for_status()
-  observations = [ GetObservedJson.of_dict(json) for json in response.json() ]
+  observations = [ ObservedResponseJson.of_dict(json) for json in response.json() ]
 
   return (observations, fcsts)
 
