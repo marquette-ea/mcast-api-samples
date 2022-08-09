@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-record GetForecastJson (
+record ForecastResponseJson (
   string OperatingArea,
   DateOnly ForecastStartDate,
   DateTime UtcRetrievalTimestamp,
@@ -19,7 +19,7 @@ record ForecastData (
   double Forecast
 );
 
-record GetObservedJson (
+record ObservedResponseJson (
   string OperatingArea,
   DateOnly Date,
   double NetLoad,
@@ -27,8 +27,8 @@ record GetObservedJson (
 );
 
 record ReportData (
-  List<GetObservedJson> Observations,
-  List<GetForecastJson> Forecasts
+  List<ObservedResponseJson> Observations,
+  List<ForecastResponseJson> Forecasts
 );
 
 class CreateMapeByWeekdayReport {
@@ -51,6 +51,11 @@ class CreateMapeByWeekdayReport {
   static readonly JsonSerializerSettings serializerSettings = 
     new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() };
 
+  public static async Task Run() { 
+    var data = await GetDataViaAPI();
+    CreateReport(data);
+  }
+
   // This retrieves the raw data from the MCast API that we will need in order to compute the MAPE by weekday
   static async Task<ReportData> GetDataViaAPI() {
     client.DefaultRequestHeaders.Accept.Clear();
@@ -69,7 +74,7 @@ class CreateMapeByWeekdayReport {
     Console.WriteLine(response.ToString());
     response.EnsureSuccessStatusCode();
     var json = await response.Content.ReadAsStringAsync();
-    var fcsts = JsonConvert.DeserializeObject<List<GetForecastJson>>(json)!;
+    var fcsts = JsonConvert.DeserializeObject<List<ForecastResponseJson>>(json)!;
 
     Console.WriteLine("Retrieving observed data...");
 
@@ -83,7 +88,7 @@ class CreateMapeByWeekdayReport {
     Console.WriteLine(response.ToString());
     response.EnsureSuccessStatusCode();
     json = await response.Content.ReadAsStringAsync();
-    var observations = JsonConvert.DeserializeObject<List<GetObservedJson>>(json)!;
+    var observations = JsonConvert.DeserializeObject<List<ObservedResponseJson>>(json)!;
 
     return new ReportData(observations, fcsts);
   }
@@ -127,10 +132,5 @@ class CreateMapeByWeekdayReport {
     foreach (var err in mapeByWeekday.OrderByDescending(x => x.MAPE)) {
       Console.WriteLine($"MAPE on {err.Weekday.ToString()}s: {err.MAPE * 100.0}%");
     }
-  }
-
-  public static async Task Run() { 
-    var data = await GetDataViaAPI();
-    CreateReport(data);
   }
 }
