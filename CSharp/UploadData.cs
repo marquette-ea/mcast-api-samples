@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-record ResponseJson ( 
+// Data format the API expects in the request to upload data
+record RequestJson ( 
   string OperatingArea,
   DateOnly Date,
   double Load
@@ -24,7 +25,7 @@ class UploadData {
 
   static readonly HttpClient client = new HttpClient();
 
-  // This lets us use PascalCase for our field names in the ResponseJson record defined above, which is standard for C#
+  // This lets us use PascalCase for our field names in the RequestJson record defined above, which is standard for C#
   // even though the JSON we receive from the API uses camelCase.
   static readonly JsonSerializerSettings serializerSettings = 
     new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() };
@@ -37,12 +38,12 @@ class UploadData {
 
     var metropolisLoad = new double[] { 134537, 135647, 136389, 137446, 132354, 124888, 127618 };
     var smallvilleLoad = new double[] { 33409, 33033, 32765, 34437, 33164, 31412, 30426 };
-    var body = new List<ResponseJson>();
+    var body = new List<RequestJson>();
 
     for (var i = 0; i <= 6; i++) {
 
       body.Add(
-        new ResponseJson(
+        new RequestJson(
           OperatingArea: "Metropolis",
           Date: dates[i],
           Load: metropolisLoad[i]
@@ -50,7 +51,7 @@ class UploadData {
       );
 
       body.Add(
-        new ResponseJson(
+        new RequestJson(
           OperatingArea: "Smallville",
           Date: dates[i],
           Load: smallvilleLoad[i]

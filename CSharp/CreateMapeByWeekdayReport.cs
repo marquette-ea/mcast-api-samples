@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
+// JSON response for an 8-day load forecast
 record ForecastResponseJson (
   string OperatingArea,
   DateOnly ForecastStartDate,
@@ -13,12 +14,14 @@ record ForecastResponseJson (
   List<ForecastData> LoadForecast
 );
 
+// JSON response for a single load forecast value
 record ForecastData (
   DateOnly Date,
   int DaysOut,
   double Forecast
 );
 
+// JSON response for an observed load value
 record ObservedResponseJson (
   string OperatingArea,
   DateOnly Date,
