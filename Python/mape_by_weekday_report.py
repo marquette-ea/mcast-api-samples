@@ -114,7 +114,7 @@ def get_data_via_api():
 
   headers = { "x-api-key": api_key }
 
-  response = requests.get(f"https://{mcast_domain}/api/v1/daily/observed-load", params=params, headers=headers);
+  response = requests.get(f"https://{mcast_domain}/api/v1/daily/observed-load", params=params, headers=headers)
   print(response)
   response.raise_for_status()
   observations = [ ObservedResponseJson.of_dict(json) for json in response.json() ]
@@ -167,7 +167,7 @@ def create_report(observations, fcsts):
   ]
 
   for (weekday, mape) in sorted(mape_by_weekday, key=lambda err: err[1], reverse=True):
-    print(f"MAPE on {calendar.day_name[weekday]}s: {mape * 100.0}%");
+    print(f"MAPE on {calendar.day_name[weekday]}s: {mape * 100.0}%")
 
 
 
