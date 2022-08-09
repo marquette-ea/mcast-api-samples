@@ -152,7 +152,7 @@ def create_report(observations, fcsts):
     date = date + timedelta(days=1)
 
   absolute_percent_error = [
-    { "date": date, "error": (fcsts_by_date[date] - observations_by_date[date]) / observations_by_date[date] }
+    { "date": date, "error": abs((fcsts_by_date[date] - observations_by_date[date]) / observations_by_date[date]) }
     for date in dates
     if date in observations_by_date and date in fcsts_by_date
   ]
