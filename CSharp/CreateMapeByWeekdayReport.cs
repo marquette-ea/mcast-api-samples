@@ -42,6 +42,7 @@ class CreateMapeByWeekdayReport {
   static readonly string opArea = "Metropolis";
   static readonly DateOnly maxDate = DateOnly.FromDateTime(DateTime.Today);
   static readonly DateOnly minDate = maxDate.AddDays(-60);
+  static readonly int idf = 1;
 
   static readonly HttpClient client = new HttpClient();
 
@@ -61,7 +62,7 @@ class CreateMapeByWeekdayReport {
       ["operatingArea"] = opArea,
       ["startDate"] = minDate.ToShortDateString(),
       ["endDate"] = maxDate.ToShortDateString(),
-      ["idf"] = "1",
+      ["idf"] = $"{idf}",
     };
     var uri = QueryHelpers.AddQueryString($"https://{mcastDomain}/api/v1/daily/forecasted-load", query);
     var response = await client.GetAsync(uri);
