@@ -82,78 +82,91 @@ class GetObservedJson:
     )
 
 
+def get_data_via_api():
+  """ This retrieves the raw data from the MCast API that we will need in order to compute the MAPE by weekday """
 
-print("Retrieving forecast data...")
+  print("Retrieving forecast data...")
 
-params = {  
-  "operatingArea": op_area,
-  "startDate": min_date.isoformat(),
-  "endDate": max_date.isoformat(),
-  "idf": idf,
-}
+  params = {  
+    "operatingArea": op_area,
+    "startDate": min_date.isoformat(),
+    "endDate": max_date.isoformat(),
+    "idf": idf,
+  }
 
-headers = { "x-api-key": api_key }
+  headers = { "x-api-key": api_key }
 
-response = requests.get(f"https://{mcast_domain}/api/v1/daily/forecasted-load", params=params, headers=headers)
-print(response)
-response.raise_for_status()
-fcsts = [ GetForecastJson.of_dict(json) for json in response.json() ]
+  response = requests.get(f"https://{mcast_domain}/api/v1/daily/forecasted-load", params=params, headers=headers)
+  print(response)
+  response.raise_for_status()
+  fcsts = [ GetForecastJson.of_dict(json) for json in response.json() ]
 
-print("Retrieving observed data...")
+  print("Retrieving observed data...")
 
-params = {  
-  "operatingArea": op_area,
-  "startDate": min_date.isoformat(),
-  "endDate": max_date.isoformat(),
-}
+  params = {  
+    "operatingArea": op_area,
+    "startDate": min_date.isoformat(),
+    "endDate": max_date.isoformat(),
+  }
 
-headers = { "x-api-key": api_key }
+  headers = { "x-api-key": api_key }
 
-response = requests.get(f"https://{mcast_domain}/api/v1/daily/observed-load", params=params, headers=headers);
-print(response)
-response.raise_for_status()
-observations = [ GetObservedJson.of_dict(json) for json in response.json() ]
+  response = requests.get(f"https://{mcast_domain}/api/v1/daily/observed-load", params=params, headers=headers);
+  print(response)
+  response.raise_for_status()
+  observations = [ GetObservedJson.of_dict(json) for json in response.json() ]
+
+  return (observations, fcsts)
+
+
+def create_report(observations, fcsts):
+  """
+  This takes the data we've already retrieved from the MCast API and computes the MAPE score for each weekday,
+  printing the results out to the console.
+  """
+
+  tomorrow_forecasts = [
+    fcst_day 
+    for fcst in fcsts 
+    for fcst_day in fcst.load_forecast 
+    if fcst_day.days_out == forecast_horizon
+  ]
+
+  fcsts_by_date = {
+    fcst.date: fcst.forecast
+    for fcst in tomorrow_forecasts
+  }
+
+  observations_by_date = {
+    obs.date: obs.net_load
+    for obs in observations
+  }
+
+  dates = []
+  date = min_date
+  while date <= max_date:
+    dates.append(date)
+    date = date + timedelta(days=1)
+
+  absolute_percent_error = [
+    { "date": date, "error": (fcsts_by_date[date] - observations_by_date[date]) / observations_by_date[date] }
+    for date in dates
+    if date in observations_by_date and date in fcsts_by_date
+  ]
+
+  def err_weekday(err): 
+    return err["date"].weekday()
+
+  percent_error_by_weekday = groupby(sorted(absolute_percent_error, key=err_weekday), key=err_weekday)
+  mape_by_weekday = [
+    (weekday, mean(x["error"] for x in err))
+    for weekday, err in percent_error_by_weekday
+  ]
+
+  for (weekday, mape) in sorted(mape_by_weekday, key=lambda err: err[1], reverse=True):
+    print(f"MAPE on {calendar.day_name[weekday]}s: {mape * 100.0}%");
 
 
 
-tomorrow_forecasts = [
-  fcst_day 
-  for fcst in fcsts 
-  for fcst_day in fcst.load_forecast 
-  if fcst_day.days_out == forecast_horizon
-]
-
-fcsts_by_date = {
-  fcst.date: fcst.forecast
-  for fcst in tomorrow_forecasts
-}
-
-observations_by_date = {
-  obs.date: obs.net_load
-  for obs in observations
-}
-
-dates = []
-date = min_date
-while date <= max_date:
-  dates.append(date)
-  date = date + timedelta(days=1)
-
-absolute_percent_error = [
-  { "date": date, "error": (fcsts_by_date[date] - observations_by_date[date]) / observations_by_date[date] }
-  for date in dates
-  if date in observations_by_date and date in fcsts_by_date
-]
-
-def err_weekday(err): 
-  return err["date"].weekday()
-
-percent_error_by_weekday = groupby(sorted(absolute_percent_error, key=err_weekday), key=err_weekday)
-mape_by_weekday = [
-  (weekday, mean(x["error"] for x in err))
-  for weekday, err in percent_error_by_weekday
-]
-
-for (weekday, mape) in sorted(mape_by_weekday, key=lambda err: err[1], reverse=True):
-  print(f"MAPE on {calendar.day_name[weekday]}s: {mape * 100.0}%");
-
+(observations, fcsts) = get_data_via_api()
+create_report(observations, fcsts)

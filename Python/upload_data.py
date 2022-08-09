@@ -3,7 +3,6 @@ import os
 import requests
 from datetime import date
 from dataclasses import dataclass
-from dataclasses_json import dataclass_json, LetterCase
 import json
 
 # This expects to find an environment variable named MCAST_API_KEY containing the key obtained from the MCast web interface.
@@ -61,7 +60,7 @@ body = json.dumps([ load.to_dict() for load in loads ])
 
 response = requests.post(f"https://{mcast_domain}/api/v1/daily/observed-load", params=params, headers=headers, data=body)
 print(response)
-print(response.text)
+if not response.ok: print(response.text)
 response.raise_for_status()
 
 print()
