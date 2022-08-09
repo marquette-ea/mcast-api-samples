@@ -122,7 +122,7 @@ class CreateMapeByWeekdayReport {
     var absolutePercentError = 
       from date in dateRange 
       where observationsByDate.ContainsKey(date) && fcstsByDate.ContainsKey(date)
-      let percentError = (fcstsByDate[date] - observationsByDate[date]) / observationsByDate[date]
+      let percentError = Math.Abs((fcstsByDate[date] - observationsByDate[date]) / observationsByDate[date])
       select new { Date = date, Error = percentError };
 
     var mapeByWeekday = 
