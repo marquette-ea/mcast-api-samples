@@ -16,7 +16,7 @@ let minDate = new Date(maxDate.getTime())
 minDate.setDate(maxDate.getDate() - 60)
 
 const opArea = "Metropolis"
-const idf = "1"
+const idf = 1
 
 // "horizon" means how many days ahead the forecast is looking.  Each MCast forecast has horizons 0 through 7, meaning
 // it forecasts "today" through "next week" (7 days from "today").  This report will examine the MAPE of forecasts made
@@ -31,6 +31,21 @@ function formatDate(date) {
   return `${year}-${month}-${day}`
 }
 
+async function getJsonRequest(uri, queryParams) {
+
+  const query = new URLSearchParams(queryParams).toString()
+
+  const requestParams = { method: "GET", headers: { "x-api-key": api_key } }
+
+  const response = await fetch(`${uri}?${query}`, requestParams)
+  console.log(`Status code: ${response.status}`)
+  if (response.status >= 300) { 
+    const msg = await response.text()
+    throw `API call failed with status code ${response.status}: ${msg}`
+  }
+  return response.json()
+}
+
 // This retrieves the raw data from the MCast API that we will need in order to compute the MAPE by weekday 
 async function getDataViaApi() {
 
@@ -42,18 +57,8 @@ async function getDataViaApi() {
     endDate: formatDate(maxDate),
     idf: idf
   }
-
-  const fcstQuery = new URLSearchParams(fcstParams).toString()
-
-  const fcstHeaders = { method: "GET", headers: { "x-api-key": api_key } }
-
-  const fcstResponse = await fetch(`https://${mcast_domain}/api/v1/daily/forecasted-load?${fcstQuery}`, fcstHeaders)
-  console.log(`Status code: ${fcstResponse.status}`)
-  if (fcstResponse.status >= 300) { 
-    const msg = await fcstResponse.text()
-    throw `forecasted-load API call failed with status code ${fcstResponse.status}: ${msg}`
-  }
-  const fcsts = await fcstResponse.json()
+  
+  const fcsts = await getJsonRequest(`https://${mcast_domain}/api/v1/daily/forecasted-load`, fcstParams)
 
   console.log("Retrieving observed data...")
 
@@ -63,19 +68,9 @@ async function getDataViaApi() {
     endDate: formatDate(maxDate)
   }
 
-  const observedQuery = new URLSearchParams(observedParams).toString()
+  const observations = await getJsonRequest(`https://${mcast_domain}/api/v1/daily/observed-load`, observedParams)
 
-  const observedHeaders = { method: "GET", headers: { "x-api-key": api_key } }
-
-  const observedResponse = await fetch(`https://${mcast_domain}/api/v1/daily/observed-load?${observedQuery}`, observedHeaders)
-  console.log(`Status code: ${observedResponse.status}`)
-  if (observedResponse.status >= 300) { 
-    const msg = await observedResponse.text()
-    throw `observed-load API call failed with status code ${observedResponse.status}: ${msg}`
-  }
-  const observations = await observedResponse.json()
-
-  return [observations, fcsts]
+  return {observations, fcsts}
 }
 
 // This takes the data we've already retrieved from the MCast API and computes the MAPE score for each weekday,
@@ -111,7 +106,7 @@ function createReport(observations, fcsts) {
   for (let date of dateRange) {
     if (observationsByDate.has(formatDate(date)) && fcstsByDate.has(formatDate(date))) {
       let error = Math.abs((fcstsByDate.get(formatDate(date)) - observationsByDate.get(formatDate(date))) / observationsByDate.get(formatDate(date)))
-      absolutePercentError.push({ date: date, error: error })
+      absolutePercentError.push({ date, error })
     }
   }
 
@@ -126,13 +121,15 @@ function createReport(observations, fcsts) {
 
   let mapeByWeekday = []
   for (let weekday in percentErrorByWeekday) {
-    mapeByWeekday.push([weekday, percentErrorByWeekday[weekday].reduce((a, b) => a + b) / percentErrorByWeekday[weekday].length ])
+    let allErrsOnThisDay = percentErrorByWeekday[weekday]
+    let mape = allErrsOnThisDay.reduce((a, b) => a + b) / allErrsOnThisDay.length 
+    mapeByWeekday.push({weekday, mape})
   }
 
-  mapeByWeekday.sort(([weekday1, mape1], [weekday2, mape2]) => mape2 - mape1)
-  for (let [weekday, mape] of mapeByWeekday) {
+  mapeByWeekday.sort(({mape: mape1}, {mape: mape2}) => mape2 - mape1)
+  for (let {weekday, mape} of mapeByWeekday) {
     console.log(`MAPE on ${weekday}s: ${mape * 100.0}%`)
   }
 }
 
-getDataViaApi().then(([observations, fcsts]) => createReport(observations, fcsts))
+getDataViaApi().then(({observations, fcsts}) => createReport(observations, fcsts))
