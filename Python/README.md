@@ -1,0 +1,5 @@
+This folder has two samples of using the MCast™ API.  To run either sample, you must install the required packages. You can do this with `pip install -r requirements.txt`. Once the packages are installed, you can run `python upload_data.py` or `python mape_by_weekday_report.py` to run either example. Note that you'll need a recent version of Python installed in order to run these examples.
+
+The first sample, upload_data.py, demonstrates using the MCast™ API to upload new consumption data and run a new forecast. Note that running this sample as-is won't actually make any changes on your MCast™ system, since the `dryRun` flag is set to `true`.
+
+The second sample, mape_by_weekday_report.py, demonstrates using the MCast™ API to download recent consumption data and MCast™ forecasts to run a custom report. In this example, we compute recent accuracy (using MAPE) by weekday and print the results.
