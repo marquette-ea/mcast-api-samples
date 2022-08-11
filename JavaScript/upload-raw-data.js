@@ -11,7 +11,7 @@ const mcastDomain = "demo-gas.mea-analytics.tools";
 
 // This will just test the API call without making any changes.
 // Change this to "false" to make real changes to your MCast database.
-const dryRun = "true";
+const dryRun = true;
 
 // Replace these specific values with the values you wish to upload; 
 // Note constructing Dates in Javascript uses values of 0-11 for 
@@ -35,12 +35,17 @@ async function uploadData(uri = '', data = {}) {
     { method: "POST",
       headers: {
         "x-api-key": apiKey,
-        "accept": "*/*",
         "Content-Type" : "application/json"
       },
       body: data
     } 
   var response = await fetch(uri, headers)
+  console.log(`Status code: ${response.status}`)
+  if (response.status >= 300) { 
+    const msg = await response.text()
+    throw `API call failed with status code ${response.status}: ${msg}`
+  }
+
   return response.json()
 } 
 
@@ -64,7 +69,9 @@ for (let i = 0; i < dates.length; i++) {
   json.push(smallvilleElement)
 }
 
+const params = { dryRun: dryRun }
+const query = new URLSearchParams(params).toString()
 jsonString = JSON.stringify(json)
-const uri = `https://${mcastDomain}/api/v1/daily/observed-load?dryRun=${dryRun}`
+const uri = `https://${mcastDomain}/api/v1/daily/observed-load?${query}`
 
 uploadData(uri, jsonString).then((data) => console.log(data))
