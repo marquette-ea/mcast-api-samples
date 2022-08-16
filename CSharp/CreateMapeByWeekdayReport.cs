@@ -37,22 +37,17 @@ record ReportData (
 class CreateMapeByWeekdayReport {
   // This expects to find an environment variable named MCAST_API_KEY containing the key obtained from the MCast web interface.
   // You may alternatively paste the API key on this line, though your company's policy might discourage plain-text secrets.
-  static readonly string apiKey = System.Environment.GetEnvironmentVariable("MCAST_API_KEY")!;
+  static readonly string ApiKey = System.Environment.GetEnvironmentVariable("MCAST_API_KEY")!;
 
   // Change this to your company's unique MCast domain
-  static readonly string mcastDomain = "demo-gas.mea-analytics.tools";
+  static readonly string MCastDomain = "demo-gas.mea-analytics.tools";
 
-  static readonly string opArea = "Metropolis";
-  static readonly DateOnly maxDate = DateOnly.FromDateTime(DateTime.Today);
-  static readonly DateOnly minDate = maxDate.AddDays(-60);
-  static readonly int idf = 1;
+  static readonly string OpArea = "Metropolis";
+  static readonly DateOnly MaxDate = DateOnly.FromDateTime(DateTime.Today);
+  static readonly DateOnly MinDate = MaxDate.AddDays(-60);
+  static readonly string Idf = "Nom Plan";
 
-  static readonly HttpClient client = new HttpClient();
-
-  // This lets us use PascalCase for our field names in the records defined above, which is standard for C#
-  // even though the JSON we receive from the API uses camelCase.
-  static readonly JsonSerializerSettings serializerSettings = 
-    new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+  static readonly HttpClient Client = new HttpClient();
 
   public static async Task Run() { 
     var data = await GetDataViaAPI();
@@ -61,19 +56,19 @@ class CreateMapeByWeekdayReport {
 
   // This retrieves the raw data from the MCast API that we will need in order to compute the MAPE by weekday
   static async Task<ReportData> GetDataViaAPI() {
-    client.DefaultRequestHeaders.Accept.Clear();
-    client.DefaultRequestHeaders.Add("x-api-key", apiKey);
+    Client.DefaultRequestHeaders.Accept.Clear();
+    Client.DefaultRequestHeaders.Add("x-api-key", ApiKey);
 
     Console.WriteLine("Retrieving forecast data...");
 
     var query = new Dictionary<string, string> {  
-      ["operatingArea"] = opArea,
-      ["startDate"] = minDate.ToShortDateString(),
-      ["endDate"] = maxDate.ToShortDateString(),
-      ["idf"] = $"{idf}",
+      ["operatingArea"] = OpArea,
+      ["startDate"] = MinDate.ToShortDateString(),
+      ["endDate"] = MaxDate.ToShortDateString(),
+      ["idf"] = Idf,
     };
-    var uri = QueryHelpers.AddQueryString($"https://{mcastDomain}/api/v1/daily/forecasted-load", query);
-    var response = await client.GetAsync(uri);
+    var uri = QueryHelpers.AddQueryString($"https://{MCastDomain}/api/v1/daily/forecasted-load", query);
+    var response = await Client.GetAsync(uri);
     Console.WriteLine(response.ToString());
     response.EnsureSuccessStatusCode();
     var json = await response.Content.ReadAsStringAsync();
@@ -82,12 +77,12 @@ class CreateMapeByWeekdayReport {
     Console.WriteLine("Retrieving observed data...");
 
     query = new Dictionary<string, string> {  
-      ["operatingArea"] = opArea,
-      ["startDate"] = minDate.ToShortDateString(),
-      ["endDate"] = maxDate.ToShortDateString(),
+      ["operatingArea"] = OpArea,
+      ["startDate"] = MinDate.ToShortDateString(),
+      ["endDate"] = MaxDate.ToShortDateString(),
     };
-    uri = QueryHelpers.AddQueryString($"https://{mcastDomain}/api/v1/daily/observed-load", query);
-    response = await client.GetAsync(uri);
+    uri = QueryHelpers.AddQueryString($"https://{MCastDomain}/api/v1/daily/observed-load", query);
+    response = await Client.GetAsync(uri);
     Console.WriteLine(response.ToString());
     response.EnsureSuccessStatusCode();
     json = await response.Content.ReadAsStringAsync();
@@ -117,7 +112,7 @@ class CreateMapeByWeekdayReport {
     );
 
     var dateRange = new List<DateOnly>();
-    for (var date = minDate; date <= maxDate; date = date.AddDays(1)) { dateRange.Add(date); }
+    for (var date = MinDate; date <= MaxDate; date = date.AddDays(1)) { dateRange.Add(date); }
 
     var absolutePercentError = 
       from date in dateRange 

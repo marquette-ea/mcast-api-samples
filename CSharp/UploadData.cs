@@ -14,25 +14,25 @@ record RequestJson (
 class UploadData {
   // This expects to find an environment variable named MCAST_API_KEY containing the key obtained from the MCast web interface.
   // You may alternatively paste the API key on this line, though your company's policy might discourage plain-text secrets.
-  static readonly string apiKey = System.Environment.GetEnvironmentVariable("MCAST_API_KEY")!;
+  static readonly string ApiKey = System.Environment.GetEnvironmentVariable("MCAST_API_KEY")!;
 
   // Change this to your company's unique MCast domain
-  static readonly string mcastDomain = "demo-gas.mea-analytics.tools";
+  static readonly string MCastDomain = "demo-gas.mea-analytics.tools";
 
   // This will just test the API call without making any changes.
   // Change this to "false" to make real changes to your MCast database.
-  static readonly bool dryRun = true;
+  static readonly bool DryRun = true;
 
-  static readonly HttpClient client = new HttpClient();
+  static readonly HttpClient Client = new HttpClient();
 
   // This lets us use PascalCase for our field names in the RequestJson record defined above, which is standard for C#
   // even though the JSON we receive from the API uses camelCase.
-  static readonly JsonSerializerSettings serializerSettings = 
+  static readonly JsonSerializerSettings SerializerSettings = 
     new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() };
   
   public static async Task Run() {
-    client.DefaultRequestHeaders.Accept.Clear();
-    client.DefaultRequestHeaders.Add("x-api-key", apiKey);
+    Client.DefaultRequestHeaders.Accept.Clear();
+    Client.DefaultRequestHeaders.Add("x-api-key", ApiKey);
 
     var dates = (from day in Enumerable.Range(25, 7) select new DateOnly(2022,07,day)).ToList();
 
@@ -59,16 +59,16 @@ class UploadData {
       );
     }
         
-    var query = new Dictionary<string, string> { ["dryRun"] = dryRun.ToString() };
-    var uri = QueryHelpers.AddQueryString($"https://{mcastDomain}/api/v1/daily/observed-load", query);
+    var query = new Dictionary<string, string> { ["dryRun"] = DryRun.ToString() };
+    var uri = QueryHelpers.AddQueryString($"https://{MCastDomain}/api/v1/daily/observed-load", query);
     var content = new StringContent(
-      JsonConvert.SerializeObject(body, serializerSettings), 
+      JsonConvert.SerializeObject(body, SerializerSettings), 
       encoding: Encoding.UTF8, 
       mediaType: "application/json"
     );
 
     Console.WriteLine("submitting load values...");
-    var response = await client.PostAsync(uri, content);
+    var response = await Client.PostAsync(uri, content);
     Console.WriteLine(response.ToString());
     Console.WriteLine(await response.Content.ReadAsStringAsync());
     response.EnsureSuccessStatusCode();
@@ -76,8 +76,8 @@ class UploadData {
     Console.WriteLine("");
     Console.WriteLine("Generating a forecast...");
 
-    uri = QueryHelpers.AddQueryString($"https://{mcastDomain}/api/v1/daily/generate-forecast", query);
-    response = await client.PostAsync(uri, null);
+    uri = QueryHelpers.AddQueryString($"https://{MCastDomain}/api/v1/daily/generate-forecast", query);
+    response = await Client.PostAsync(uri, null);
     Console.WriteLine(response.ToString());
     Console.WriteLine(await response.Content.ReadAsStringAsync());
     response.EnsureSuccessStatusCode();
