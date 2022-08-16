@@ -10,7 +10,7 @@ record ForecastResponseJson (
   DateTime UtcRetrievalTimestamp,
   DateTime UtcForecastTimestamp,
   bool IsPinned,
-  int Idf,
+  string Idf,
   List<ForecastData> LoadForecast
 );
 
