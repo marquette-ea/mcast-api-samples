@@ -9,7 +9,7 @@ $mcastDomain = "demo-gas.mea-analytics.tools"
 # Change this to "false" to make real changes to your MCast database.
 $dryRun = "true"
 
-$file = Get-Item -Path "DailyObservations.csv"
+$file = Get-Item -Path "data.csv"
 
 $response = Invoke-WebRequest `
   -Method "POST" `
