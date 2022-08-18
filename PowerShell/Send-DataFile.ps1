@@ -17,3 +17,5 @@ $response = Invoke-WebRequest `
   -Headers @{ "x-api-key" = $apiKey } `
   -ContentType "multipart/form-data" `
   -Form @{ file = $file; type = "text/csv" }
+
+return $response
