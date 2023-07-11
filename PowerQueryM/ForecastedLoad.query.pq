@@ -2,7 +2,7 @@ let
     MCastDomain = "demo-gas.mea-analytics.tools",
     MaxDate = DateTime.Date(DateTime.LocalNow()),
     MinDate = Date.AddDays(MaxDate, -60),
-    ApiKey = "your API Key here"
+    ApiKey = "your API Key here",
     Headers = [#"x-api-key"=ApiKey],
     Options = [Headers=Headers],
 
