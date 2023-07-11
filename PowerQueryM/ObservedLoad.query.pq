@@ -1,11 +1,13 @@
 let
+    // These values must be changed to match your data
     MCastDomain = "demo-gas.mea-analytics.tools",
+    ApiKey = "your API Key here",
+    OpArea = "Metropolis",
+    Idf = "Nom Plan",
+
+    // Change these values to alter what data gets included in the analysis 
     MaxDate = DateTime.Date(DateTime.LocalNow()),
     MinDate = Date.AddDays(MaxDate, -60),
-    ApiKey = "your API Key here",
-    Headers = [#"x-api-key"=ApiKey],
-    Options = [Headers=Headers],
-
 
     ObservedQueryParams = [
         operatingArea = "Metropolis",
@@ -14,6 +16,8 @@ let
     ],
     ObservedQuery = Uri.BuildQueryString(ObservedQueryParams),
     ObservedUrl = MCastDomain & "/api/v1/daily/observed-load?" & ObservedQuery,
+    Headers = [#"x-api-key"=ApiKey],
+    Options = [Headers=Headers],
     ObservedLoad = Json.Document(Web.Contents(ObservedUrl, Options))    
 
 in

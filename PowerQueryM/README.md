@@ -6,11 +6,15 @@ To run these samples, open Excel and in the "Data" tab, select "Get Data" -> "Fr
 
 ![BlankQuery]
 
-In your new query, under "Query," select "Advanced Editor" and paste in the code from any of the three samples. For ObservedLoad.query.pq or ForecastedLoad.query.pq, you'll have to edit the query to use your own domain and API Key. For APE.query.pq, you'll have to setup the other two examples first.
+In your new query, under "Query," select "Advanced Editor" to open a code window to paste in the code from any of the three samples. 
 
+![AdvEditorButton]
 ![AdvEditor]
+
+For ObservedLoad.query.pq or ForecastedLoad.query.pq, you'll have to edit the query after pasting to use your own domain and API Key. For APE.query.pq, you'll have to setup the other two examples first.
 
 Finally, select "Close & Load" to finish setting up the query. By default, any connection will load in a tab in a new table. 
 
 [BlankQuery]: ../assets/BlankQuery.png "Create Blank Query"
+[AdvEditorButton]: ../assets/AdvancedEditorButton.png "Button to Open Advanced Editor"
 [AdvEditor]: ../assets/AdvancedEditor.png "Advanced Editor"
