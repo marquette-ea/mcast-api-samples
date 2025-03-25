@@ -12,17 +12,17 @@ $dryRun = "true"
 $file = Get-Item -Path "data.csv"
 
 
-$fileBytes = [System.IO.File]::ReadAllBytes($FilePath);
+$fileBytes = [System.IO.File]::ReadAllBytes($file);
 $fileEnc = [System.Text.Encoding]::GetEncoding("iso-8859-1").GetString($fileBytes);
 $boundary = [System.Guid]::NewGuid().ToString(); 
 $LF = "`r`n";
 
 $bodyLines = ( 
-    "--$boundary",
-    "Content-Disposition: form-data; name=`"file`"; filename=`"$file`"",
-    "Content-Type: text/csv$LF",
-    $fileEnc,
-    "--$boundary--$LF" 
+  "--$boundary",
+  "Content-Disposition: form-data; name=`"file`"; filename=`"$($file.Name)`"",
+  "Content-Type: text/csv$LF",
+  $fileEnc,
+  "--$boundary--$LF" 
 ) -join $LF
 
 
